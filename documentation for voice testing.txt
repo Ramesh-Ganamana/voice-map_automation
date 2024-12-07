@@ -1,0 +1,116 @@
+       documentation for voice testing 
+
+
+
+1.We need vosk model(link:https://alphacephei.com/vosk/models)
+2.For testing we just need to download zip file (vosk-model-small-en-us-0.15) from this site(https://alphacephei.com/vosk/models)
+3.The imports& Installations required for the voice testing a.from vosk import Model, KaldiRecognizer
+                                             b.import pyaudio
+                                             C.pip install vosk
+  
+4. After downloading the zip file we need to extract the zip file place it in project folder
+
+CODE: Normal 
+ def voice_testing():
+    # Load the Vosk model (ensure the correct model path)
+    model = Model("vosk-model-small-en-us-0.15")
+    recognizer = KaldiRecognizer(model, 16000)
+
+    # Initialize the audio input
+    p = pyaudio.PyAudio()
+    stream = p.open(format=pyaudio.paInt16, channels=1, rate=16000, input=True, frames_per_buffer=8000)
+    stream.start_stream()
+    print("Listening... Speak now.")
+
+    while True:
+        data = stream.read(4000)
+        if recognizer.AcceptWaveform(data):
+            result = recognizer.Result()
+            print(result)  # Output the recognized text
+            break  # Exit the loop after capturing the first recognized text
+
+    # Stop and close the audio stream
+    stream.stop_stream()
+    stream.close()
+    p.terminate()
+
+    print("Recognition complete. Program stopped.")
+
+voice_testing()
+
+
+CODE: reusable Parameterised
+
+from vosk import Model, KaldiRecognizer
+import pyaudio
+import time
+
+
+def voice_testing(model_path="vosk-model-small-en-us-0.15",
+                  sample_rate=16000,
+                  buffer_size=4000,
+                  record_duration=None,
+                  repeats=1):
+    """
+    Capture and transcribe voice using the Vosk model, allowing multiple runs.
+
+    Parameters:
+        model_path (str): Path to the Vosk model directory.
+        sample_rate (int): Sample rate for audio capture (default: 16000).
+        buffer_size (int): Size of audio data buffer (default: 4000).
+        record_duration (float): Duration to record audio (in seconds). If None, listens indefinitely.
+        repeats (int): Number of times to repeat the recording.
+
+    Returns:
+        list: List of recognized texts from each run.
+    """
+    # Load the Vosk model
+    model = Model(model_path)
+    recognizer = KaldiRecognizer(model, sample_rate)
+
+    # Initialize the audio input
+    p = pyaudio.PyAudio()
+    stream = None  # Ensure stream is defined even if p.open() fails
+
+    try:
+        stream = p.open(format=pyaudio.paInt16, channels=1, rate=sample_rate, input=True, frames_per_buffer=buffer_size)
+        stream.start_stream()
+
+        all_results = []  # Renamed from `results` to avoid shadowing
+        for i in range(repeats):
+            print(f"\nRecording {i + 1} of {repeats}: Listening... Speak now.")
+            start_time = time.time()
+            recognized_text = None
+
+            while True:
+                data = stream.read(buffer_size, exception_on_overflow=False)
+                if recognizer.AcceptWaveform(data):
+                    result = recognizer.Result()
+                    print("Result:", result)  # Debugging or logging
+                    recognized_text = result  # Save the recognized result
+                    break  # Exit after capturing recognized text
+
+                # Stop after the specified duration
+                if record_duration and (time.time() - start_time) >= record_duration:
+                    print("Recording duration ended.")
+                    break
+
+            all_results.append(recognized_text)
+        print("All recordings complete.")
+
+    finally:
+        # Stop and close the audio stream only if it was successfully opened
+        if stream is not None:
+            stream.stop_stream()
+            stream.close()
+        p.terminate()
+
+    return all_results
+
+
+# Example Usage
+recorded_texts = voice_testing(repeats=3, record_duration=5)  # 3 recordings, each for 5 seconds
+print("All Recognized Texts:", recorded_texts)
+
+5. To start the model we need to wait for 6 seconds for first time 
+

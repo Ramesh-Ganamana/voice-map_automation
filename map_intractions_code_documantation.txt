@@ -1,0 +1,47 @@
+____________________________MAP_INTRACTIONS_____________________________________________________________________________________
+
+1.from selenium.webdriver.common.actions import interaction
+from selenium.webdriver.common.actions.action_builder import ActionBuilder
+from selenium.webdriver.common.actions.pointer_input import PointerInput
+import time
+
+def perform_touch_action(x, y):
+    """
+    Perform a touch action at the specified absolute coordinates.
+
+    Parameters:
+    - driver: The WebDriver instance to control the browser or emulator.
+    - x (int): The x-coordinate for the touch action.
+    - y (int): The y-coordinate for the touch action.
+    """
+    time.sleep(3)  # Wait before performing the action
+    # Initialize PointerInput for touch interaction
+    touch = PointerInput(interaction.POINTER_TOUCH, "touch")
+    # Create an ActionBuilder
+    actions = ActionBuilder( mouse=touch)
+    # Define the touch actions using absolute coordinates
+    actions.pointer_action.move_to_location(x, y)  # Move to the given coordinates
+    actions.pointer_action.click()  # Perform a tap (click)
+    actions.perform()  # Execute the action
+
+# Usage example
+perform_touch_action(968, 1146)
+
+
+for project purpose
+
+
+ def map_action_1(self,x,y):
+
+        time.sleep(3)
+        # Initialize PointerInput for touch interaction
+        touch = PointerInput(interaction.POINTER_TOUCH, "touch")
+        # Create an ActionBuilder
+        actions = ActionBuilder(self.driver, mouse=touch)
+        # Define the touch actions using absolute coordinates
+        actions.pointer_action.move_to_location(x, y)  # Absolute coordinates
+        actions.pointer_action.click()  # Perform a tap (click)
+        actions.perform()  # Execute the action
+
+
+    map_action_1(968, 1146)
